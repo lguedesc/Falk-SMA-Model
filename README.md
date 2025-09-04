@@ -41,6 +41,6 @@ This modification defines the temperature $T_a$, above which the austenite phase
 \[1\] Falk, F. (1980). [Model free energy, mechanics and thermodynamics
 of shape memory alloys](https://doi.org/10.1016/0001-6160(80)90030-9). Acta Metallurgica, 28, 1773--1780.
 
-\[2\] Falk, F. (1983). [One-dimensional model of shape memory alloys](https://rcin.org.pl/ippt/publication/161795).Archives of Mechanics, 35(1), 63--84.
+\[2\] Falk, F. (1983). [One-dimensional model of shape memory alloys](https://rcin.org.pl/ippt/publication/161795). Archives of Mechanics, 35(1), 63--84.
 
 \[3\] Savi, M.A. & Braga, A.M.B. (1993). [Chaotic vibrations of an oscillator with shape memory](https://www.researchgate.net/publication/233783381_Chaotic_Vibrations_of_an_Oscillator_with_Shape_Memory). Journal of the Brazilian Society of Mechanical Sciences, 15(1), 1--20.
