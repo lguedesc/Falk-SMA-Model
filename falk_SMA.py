@@ -37,33 +37,36 @@ Last Update: 04 Sep 2025
 """
 
 import matplotlib.pyplot as plt
+import matplotlib.figure as mfig
 import numpy as np
 from typing import Callable
 
-def newton_raphson(f: Callable[..., float], df: Callable[..., float], x0: float, tol: float = 1e-6, max_iter: int = 100, *args, **kwargs):
+def newton_raphson(f: Callable[..., float], df: Callable[..., float], x0: float, 
+                   tol: float = 1e-6, max_iter: int = 100,
+                   *args, **kwargs) -> float:
     """
-    ------------------------------------------------------------------------
-    This function implements the Newton-Raphson method for finding roots of 
-    a function.
-    ------------------------------------------------------------------------
+    ----------------------------------------------------------------------------
+    This function implements the Newton-Raphson method for finding roots of a 
+    function.
+    ----------------------------------------------------------------------------
     Description of function arguments:
-    f : Callable[..., float]
+    - f: Callable[..., float]
         The function for which the roots are to be found.
-    df : Callable[..., float]
+    - df: Callable[..., float]
         The derivative of the function f.
-    x0 : float
+    - x0: float
         Initial guess for the root.
-    tol : float
+    - tol: float
         Tolerance for the error. Default is 1e-6.
-    max_iter : int
+    - max_iter: int
         Maximum number of iterations. Default is 100.
-    *args, **kwargs
+    - *args, **kwargs
         Additional arguments to be passed to the function, f, and its 
         derivative, df.
-    ------------------------------------------------------------------------
+    ----------------------------------------------------------------------------
     Returns: float
         The estimated root of the function.
-    ------------------------------------------------------------------------
+    ----------------------------------------------------------------------------
     """    
     x = x0
     for i in range(max_iter):
@@ -84,21 +87,21 @@ def newton_raphson(f: Callable[..., float], df: Callable[..., float], x0: float,
 
 class FalkSMAModel:
     """
-    ------------------------------------------------------------------------
+    ----------------------------------------------------------------------------
     This class implements the Falk model for shape memory alloys.
-    ------------------------------------------------------------------------
-    Description of class arguments:
-    a : float
+    ----------------------------------------------------------------------------
+    Parameters:
+    - a: float
         First material parameter [MPa/ºC] or [MPa/K].
-    b : float
+    - b: float
         Second material parameter [MPa/ºC] or [K].
-    Ta : float
+    - Ta: float
         Austenite start temperature [ºC] or [K].
-    Tm : float
+    - Tm: float
         Martensite start temperature [ºC] or [K].
-    T : float
+    - T: float
         Current temperature [ºC] or [K].
-    ------------------------------------------------------------------------
+    ----------------------------------------------------------------------------
     """ 
     def __init__(self, a: float, b: float, Ta: float, Tm: float, T: float):
         self.a = a      #[MPa/ºC] 
@@ -107,46 +110,46 @@ class FalkSMAModel:
         self.Tm = Tm    #[ºC]
         self.T = T      #[ºC]
         
-    def free_energy(self, epsilon: np.ndarray[np.float64]):
+    def free_energy(self, epsilon: np.ndarray[np.float64]) -> np.ndarray[np.float64]:
         """
         ------------------------------------------------------------------------
         Obtains the free energy array for a given strain array.
         ------------------------------------------------------------------------
-        Description of function arguments:
-        epsilon : np.ndarray[np.float64]
+        Parameters:
+        - epsilon: np.ndarray[np.float64]
             Strain array.  
         ------------------------------------------------------------------------
-        Returns: float
-            The free energy corresponding to the given strain array.
+        Returns: np.ndarray[np.float64]
+            The free energy array corresponding to the given strain array.
         ------------------------------------------------------------------------
         """
         psi = (self.a/2.0)*(self.T - self.Tm)*(epsilon**2) - (self.b/4.0)*(epsilon**4) + ((self.b**2)/(24*self.a*(self.Ta - self.Tm)))*(epsilon**6)
         return psi
     
-    def stress(self, epsilon: np.ndarray[np.float64]):
+    def stress(self, epsilon: np.ndarray[np.float64]) -> np.ndarray[np.float64]:
         """
         ------------------------------------------------------------------------
         Obtains the stress array for a given strain array.
         ------------------------------------------------------------------------
-        Description of function arguments:
-        epsilon : np.ndarray[np.float64]
+        Parameters:
+        - epsilon: np.ndarray[np.float64]
             Strain array.  
         ------------------------------------------------------------------------
-        Returns: float
+        Returns: np.ndarray
             The stress array corresponding to the given strain array.
         ------------------------------------------------------------------------
         """
         sigma = self.a*(self.T - self.Tm)*epsilon - self.b*(epsilon**3) + ((self.b**2)/(4*self.a*(self.Ta - self.Tm)))*(epsilon**5)
         return sigma
     
-    def stress_for_root(self, epsilon: float):
+    def stress_for_root(self, epsilon: float) -> float:
         """
         ------------------------------------------------------------------------
         Auxiliary function to find the root of the stress equation for a given
         target stress using the Newton-Raphson method.
         ------------------------------------------------------------------------
-        Description of function arguments:
-        epsilon : np.ndarray[np.float64]
+        Parameters:
+        - epsilon: np.ndarray[np.float64]
             Strain array.  
         ------------------------------------------------------------------------
         Returns: float
@@ -156,16 +159,16 @@ class FalkSMAModel:
         value = self.a*(self.T - self.Tm)*epsilon - self.b*(epsilon**3) + ((self.b**2)/(4*self.a*(self.Ta - self.Tm)))*(epsilon**5) - self.sigma_target
         return value
     
-    def stress_derivative(self, epsilon: float):
+    def stress_derivative(self, epsilon: float) -> np.ndarray[np.float64]:
         """
         ------------------------------------------------------------------------
         Obtain the time derivative of the stress array for a given strain array.
         ------------------------------------------------------------------------
-        Description of function arguments:
-        epsilon : np.ndarray[np.float64]
+        Parameters:
+        - epsilon: np.ndarray[np.float64]
             Strain array.  
         ------------------------------------------------------------------------
-        Returns: float
+        Returns: np.ndarray[np.float64]
             The time derivative of the stress array corresponding to the given 
             strain array.
         ------------------------------------------------------------------------
@@ -173,19 +176,19 @@ class FalkSMAModel:
         dsigma = self.a*(self.T - self.Tm) - 3*self.b*(epsilon**2) + ((5*(self.b**2))/(4*self.a*(self.Ta - self.Tm)))*(epsilon**4)
         return dsigma
     
-    def solution_stress_driven(self, sigma, epsilon_0 = 0.0115):
+    def solution_stress_driven(self, sigma, epsilon_0 = 0.0115) -> np.ndarray[np.float64]:
         """
         ------------------------------------------------------------------------
         Obtain the numerical solution for the strain for a stress-driven 
         simulation using the Newton-Raphson method.
         ------------------------------------------------------------------------
-        Description of function arguments:
-        sigma : np.ndarray[np.float64]
+        Parameters:
+        - sigma: np.ndarray[np.float64]
             Stress array.  
-        epsilon_0 : float
+        - epsilon_0: float
             Initial guess for the root.
         ------------------------------------------------------------------------
-        Returns: float
+        Returns: np.ndarray[np.float64]
             The strain array corresponding to the given stress array.
         ------------------------------------------------------------------------
         """
@@ -207,26 +210,28 @@ class FalkSMAModel:
         
         return epsilon    
 
-def plot_single_behavior(axs: np.ndarray, i: int, T: float, epsilon: np.ndarray, sigma: np.ndarray, psi: np.ndarray, xlim: list = [-0.1, 0.1]):
+def plot_single_behavior(axs: np.ndarray, i: int, T: float, 
+                         epsilon: np.ndarray, sigma: np.ndarray, 
+                         psi: np.ndarray, xlim: list = [-0.1, 0.1]) -> None:
     """
     ------------------------------------------------------------------------
     Auxiliary function to plot the free energy and stress-strain behavior
     for a single simulation type (strain-driven or stress-driven).
     ------------------------------------------------------------------------
-    Description of function arguments:
-    axs: np.ndarray
+    Parameters:
+    - axs: np.ndarray
         Array of matplotlib axes objects for subplots.
-    i: int
+    - i: int
         Index of the current subplot.
-    T: float
+    - T: float
         Current temperature [ºC] or [K].
-    epsilon: np.ndarray
+    - epsilon: np.ndarray
         Strain array.
-    sigma: np.ndarray
+    - sigma: np.ndarray
         Stress array.
-    psi: np.ndarray
+    - psi: np.ndarray
         Free energy array.
-    xlim: list
+    - xlim: list
         Limits for the x-axis in the plots. Default is [-0.1, 0.1].
     ------------------------------------------------------------------------
     Returns: None
@@ -248,30 +253,33 @@ def plot_single_behavior(axs: np.ndarray, i: int, T: float, epsilon: np.ndarray,
         ax.axhline(0, color='gray', linestyle='-', linewidth=0.7)
         ax.axvline(0, color='gray', linestyle='-', linewidth=0.7)
 
-def plot_both_behaviors(axs: np.ndarray, i: int, T: float, epsilon_1: np.ndarray, sigma_1: np.ndarray, epsilon_2: np.ndarray, sigma_2: np.ndarray, psi: np.ndarray, xlim: list = [-0.1, 0.1]):
+def plot_both_behaviors(axs: np.ndarray, i: int, T: float, 
+                        epsilon_1: np.ndarray, sigma_1: np.ndarray, 
+                        epsilon_2: np.ndarray, sigma_2: np.ndarray, 
+                        psi: np.ndarray, xlim: list = [-0.1, 0.1]) -> None:
     """
     ------------------------------------------------------------------------
     Auxiliary function to plot the free energy and stress-strain behavior
     for a single simulation type (strain-driven or stress-driven).
     ------------------------------------------------------------------------
-    Description of function arguments:
-    axs: np.ndarray
+    Parameters
+    - axs: np.ndarray
         Array of matplotlib axes objects for subplots.
-    i: int
+    - i: int
         Index of the current subplot.
-    T: float
+    - T: float
         Current temperature [ºC] or [K].
-    epsilon_1: np.ndarray
+    - epsilon_1: np.ndarray
         Strain array for case 1.
-    sigma_1: np.ndarray
+    - sigma_1: np.ndarray
         Stress array for case 1.
-    epsilon_2: np.ndarray
+    - epsilon_2: np.ndarray
         Strain array for case 2.
-    sigma_2: np.ndarray
+    - sigma_2: np.ndarray
         Stress array for case 2.
-    psi: np.ndarray
+    - psi: np.ndarray
         Free energy array.
-    xlim: list
+    - xlim: list
         Limits for the x-axis in the plots. Default is [-0.1, 0.1].
     ------------------------------------------------------------------------
     Returns: None
@@ -295,7 +303,24 @@ def plot_both_behaviors(axs: np.ndarray, i: int, T: float, epsilon_1: np.ndarray
         ax.axhline(0, color='gray', linestyle='-', linewidth=0.7)
         ax.axvline(0, color='gray', linestyle='-', linewidth=0.7)
 
-def save_example_fig(fig, axs, dpi = 300): 
+def save_example_fig(fig: mfig.Figure, axs: np.ndarray, dpi: int = 300) -> None: 
+    """
+    ----------------------------------------------------------------------------
+    Adjusts subplots and saves a figure for example visualization.
+    ----------------------------------------------------------------------------
+    Parameters:
+    - fig: matplotlib.figure.Figure (mfig.Figure)
+        The figure object containing the subplots.
+    - axs: np.ndarray
+        Array of matplotlib axes objects corresponding to the subplots.
+    - dpi: int, optional
+        Resolution of the saved figure in dots per inch. Default is 300.
+    ----------------------------------------------------------------------------
+    Returns:
+    - None
+        The function modifies axes limits and saves the figure as 'example.png'.
+    ----------------------------------------------------------------------------
+    """
     axs[0, 0].set_ylim([-30, 40])
     axs[0, 1].set_ylim([-12, 40])
     axs[0, 2].set_ylim([-12, 40])
